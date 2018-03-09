@@ -40,7 +40,17 @@ Messages.indexes.create_one({ :ts => 1 }, :unique => true)
 def insert_message(message)
   # Message can be duplicate but dont check (to improve the speed)
   begin
-    Messages.insert_one(message)
+#    Messages.insert_one(message)
+     if message['subtype'] == "message_deleted" then
+         puts "DELETED"
+         Messages.delete_one({'ts': message['ts'] }, message)
+     elsif message['subtype'] == "message_changed" then
+         puts "CHANGED"
+         Messages.update_one({'ts': message['ts'] }, message, { upsert: true })
+     else
+         puts "CREATED"
+         Messages.insert_one(message)
+     end
   rescue
   end
 end
